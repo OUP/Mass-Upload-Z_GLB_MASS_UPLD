@@ -1,0 +1,11 @@
+<!--
+
+    Copyright (C) OUP company. All rights reserved.
+
+-->
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<BusyDialog
+		showCancelButton="false"/>
+</core:FragmentDefinition>

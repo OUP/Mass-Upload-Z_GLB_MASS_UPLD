@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData">
+    <edmx:DataServices m:DataServiceVersion="2.0">
+        <Schema Namespace="ZGLB_MASSUPLOAD_SRV" xml:lang="en" sap:schema-version="1" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+            <EntityType Name="FileContents" m:HasStream="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="FileName"/>
+                    <PropertyRef Name="Mimetype"/>
+                </Key>
+                <Property Name="FileName" Type="Edm.String" Nullable="false" MaxLength="256" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Mimetype" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="FileID" Type="Edm.Guid" Nullable="false" sap:unicode="false" sap:label="UUID" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="FileDownload" m:HasStream="true" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="TemplateID"/>
+                </Key>
+                <Property Name="TemplateID" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+                <Property Name="Language" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/>
+            </EntityType>
+            <EntityType Name="Action" sap:content-version="1">
+                <Key>
+                    <PropertyRef Name="TemplateID"/>
+                    <PropertyRef Name="FileID"/>
+                    <PropertyRef Name="Name"/>
+                    <PropertyRef Name="ISBN"/>
+                    <PropertyRef Name="TITLE"/>
+                    <PropertyRef Name="PLANT"/>
+                    <PropertyRef Name="QUANTITY"/>
+                    <PropertyRef Name="DATE"/>
+                    <PropertyRef Name="COST_QTY1"/>
+                    <PropertyRef Name="COST_QTY2"/>
+                    <PropertyRef Name="FRGAB"/>
+                    <PropertyRef Name="PRGRP"/>
+                    <PropertyRef Name="BOM_EXP"/>
+                    <PropertyRef Name="MANUAL_CHNG"/>
+                    <PropertyRef Name="ITEM_TXT"/>
+                    <PropertyRef Name="DLV_TXT"/>
+                    <PropertyRef Name="ZSTATUS"/>
+                    <PropertyRef Name="MESSAGE"/>
+                    <PropertyRef Name="ROW"/>
+                </Key>
+                <Property Name="TemplateID" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="FileID" Type="Edm.Guid" Nullable="false" sap:unicode="false" sap:label="UUID" sap:creatable="false" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="Name" Type="Edm.String" Nullable="false" sap:unicode="false" sap:creatable="false" sap:updatable="false" sap:sortable="false"/>
+                <Property Name="ISBN" Type="Edm.String" Nullable="false" MaxLength="40" sap:label="ISBN"/>
+                <Property Name="TITLE" Type="Edm.String" Nullable="false" MaxLength="40" sap:label="Title"/>
+                <Property Name="PLANT" Type="Edm.String" Nullable="false" MaxLength="4" sap:label="Plant"/>
+                <Property Name="QUANTITY" Type="Edm.String" Nullable="false" MaxLength="13" sap:label="Quantity"/>
+                <Property Name="DATE" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Delivery date"/>
+                <Property Name="COST_QTY1" Type="Edm.String" Nullable="false" MaxLength="13" sap:label="Cost Quantity1"/>
+                <Property Name="COST_QTY2" Type="Edm.String" Nullable="false" MaxLength="13" sap:label="Cost Quantity2"/>
+                <Property Name="FRGAB" Type="Edm.String" Nullable="false" MaxLength="2" sap:label="Release code"/>
+                <Property Name="PRGRP" Type="Edm.String" Nullable="false" MaxLength="6" sap:label="PR Group"/>
+                <Property Name="BOM_EXP" Type="Edm.String" Nullable="false" MaxLength="3" sap:label="BOM Explode"/>
+                <Property Name="MANUAL_CHNG" Type="Edm.String" Nullable="false" MaxLength="1" sap:label="Manual change Needed"/>
+                <Property Name="ITEM_TXT" Type="Edm.String" Nullable="false" MaxLength="100" sap:label="Item Text"/>
+                <Property Name="DLV_TXT" Type="Edm.String" Nullable="false" MaxLength="80" sap:label="Delivery Text"/>
+                <Property Name="ZSTATUS" Type="Edm.String" Nullable="false" MaxLength="10" sap:label="Character Field with Length 10"/>
+                <Property Name="MESSAGE" Type="Edm.String" Nullable="false" MaxLength="25" sap:label="Field"/>
+                <Property Name="ROW" Type="Edm.String" Nullable="false" MaxLength="11" sap:label="Data record number"/>
+            </EntityType>
+            <EntityContainer Name="ZGLB_MASSUPLOAD_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx">
+                <EntitySet Name="FileContentsSet" EntityType="ZGLB_MASSUPLOAD_SRV.FileContents" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="FileDownloadSet" EntityType="ZGLB_MASSUPLOAD_SRV.FileDownload" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <EntitySet Name="ActionSet" EntityType="ZGLB_MASSUPLOAD_SRV.Action" sap:creatable="false" sap:updatable="false" sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+                <FunctionImport Name="Import" ReturnType="ZGLB_MASSUPLOAD_SRV.FileContents" EntitySet="FileContentsSet" m:HttpMethod="GET">
+                    <Parameter Name="FileID" Type="Edm.Guid" Mode="In" Nullable="true"/>
+                </FunctionImport>
+                <FunctionImport Name="TestImport" ReturnType="ZGLB_MASSUPLOAD_SRV.FileContents" EntitySet="FileContentsSet" m:HttpMethod="GET">
+                    <Parameter Name="FileID" Type="Edm.Guid" Mode="In" Nullable="true"/>
+                </FunctionImport>
+            </EntityContainer>
+            <atom:link rel="self" href="https://s4dbasdev:443/sap/opu/odata/sap/ZGLB_MASSUPLOAD_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+            <atom:link rel="latest-version" href="https://s4dbasdev:443/sap/opu/odata/sap/ZGLB_MASSUPLOAD_SRV/$metadata" xmlns:atom="http://www.w3.org/2005/Atom"/>
+        </Schema>
+    </edmx:DataServices>
+</edmx:Edmx>

@@ -1,0 +1,45 @@
+<!--
+
+    Copyright (C) OUP company. All rights reserved.
+
+-->
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<Dialog id="tempDialog" title="{i18n>titlePlanTemplates}">
+		<subHeader>
+			<Bar>
+				<contentLeft>
+					<Select 
+						id="cbSeparatorTempDialog" 
+						showSecondaryValues="true" 
+						items="{SeparatorCollection>/items}" 
+						selectedKey="1" 
+						change="onSelectionChange"
+						width="20%">
+						<core:ListItem 
+							key="{SeparatorCollection>key}" 
+							text="{SeparatorCollection>character}" 
+							additionalText="{SeparatorCollection>text}"/>
+					</Select>
+					<Label 
+						id="idLabelTempDialog" 
+						labelFor="cbSeparatorTempDialog" 
+						text="{i18n>lbSelectSeparator}">
+					</Label>
+				</contentLeft>
+			</Bar>
+		</subHeader>
+		<content>
+			<VBox
+				items="{/TemplateSet}"
+				class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom">
+				<Link 
+					text="{Name}"
+					href="/sap/opu/odata/SAP/ZGLB_MASSUPLOAD_SRV/FileDownloadSet('{ID}')/$value"
+					class="sapUiTinyMarginBottom"/>
+			</VBox>
+		</content>
+		<buttons>
+			<Button id="idBtnDialogClose" text="{i18n>btnDialogClose}" press="onDialogClose"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
