@@ -252,6 +252,12 @@ sap.ui.define(
               this._oBusyDialog.close();
             }
             this._oTableContainer.setVisible(false);
+
+            // error message for template issue
+            this.oMsgStripErrorProtocol.setVisible(true);
+            this.oMsgStripErrorProtocol.setText(
+              this.getResourceBundle().getText("templateError")
+            )
           }
           // file was processed => retrieve relevant data from backend:
           if (sResponse === "success" || sResponse === "warning") {

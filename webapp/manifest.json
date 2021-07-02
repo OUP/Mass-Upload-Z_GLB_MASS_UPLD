@@ -20,7 +20,7 @@
           "localUri": "localService/metadata.xml"
         }
       }
-		}
+    }
   },
   "sap.ui": {
     "technology": "UI5",
@@ -41,6 +41,9 @@
 
   "sap.ui5": {
     "flexEnabled": false,
+    "config": {
+      "fullWidth": true
+    },
     "rootView": {
       "viewName": "oup.glb.zglbmassupload.view.Main",
       "type": "XML",
@@ -66,10 +69,10 @@
           "bundleName": "oup.glb.zglbmassupload.i18n.i18n"
         }
       },
-			"": {
-				"dataSource": "mainService",
-				"preload": true
-			}
+      "": {
+        "dataSource": "mainService",
+        "preload": true
+      }
     },
     "resources": {
       "css": [
