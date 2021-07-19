@@ -12,6 +12,10 @@ sap.ui.define(
     "sap/ui/table/RowSettings",
     "sap/m/Text",
     "sap/m/MessageToast",
+    "sap/m/OverflowToolbar",
+    "sap/m/Button",
+    "sap/m/ToolbarSpacer",
+    "sap/m/Title",
   ],
   function (
     Controller,
@@ -21,7 +25,11 @@ sap.ui.define(
     Column,
     RowSettings,
     Text,
-    MessageToast
+    MessageToast,
+    OverflowToolbar,
+    Button,
+    ToolbarSpacer,
+    Title
   ) {
     "use strict";
 
@@ -257,7 +265,7 @@ sap.ui.define(
             this.oMsgStripErrorProtocol.setVisible(true);
             this.oMsgStripErrorProtocol.setText(
               this.getResourceBundle().getText("templateError")
-            )
+            );
           }
           // file was processed => retrieve relevant data from backend:
           if (sResponse === "success" || sResponse === "warning") {
@@ -488,12 +496,29 @@ sap.ui.define(
               let aTableProperties = [];
               let sStatusFieldProperty = "";
 
+              //Overflow Toolbar
+              var that = this;
+              var oOverflowToolbar = new OverflowToolbar({
+                content: [
+                  new Title({ text: "ITEMS (" + aItemDataFields.length + ")" }),
+                  new ToolbarSpacer(),
+                  new Button({
+                    id: "idDownloadResultsBtn",
+                    text: "Download",
+                    icon: "sap-icon://excel-attachment",
+                    enabled: false,
+                    press: function () {
+                      that.onPressDownloadBtn();
+                    },
+                  }),
+                ],
+              });
               // create new sap.ui.table.GridTable
               let oTable = new Table({
-                title: "ITEMS (" + aItemDataFields.length + ")",
                 visibleRowCountMode: "Auto",
                 selectionMode: "None",
                 minAutoRowCount: 10,
+                extension: [oOverflowToolbar],
               }).addStyleClass("sapUiSmallMargin");
 
               // identify columns
@@ -592,6 +617,10 @@ sap.ui.define(
                 this.oMsgStripSuccessProtocol.setText(
                   "Application data is created successfully."
                 );
+                var oDownloadBtn = sap.ui
+                  .getCore()
+                  .byId("idDownloadResultsBtn");
+                oDownloadBtn.setEnabled(true);
               }
 
               // promise return
@@ -629,6 +658,10 @@ sap.ui.define(
             error: fnError,
           });
         });
+      },
+      onPressDownloadBtn: function () {
+        let sURL = `/sap/opu/odata/SAP/ZGLB_MASSUPLOAD_SRV/ExportResultSet(TemplateID='${this._sTemplateID}',FileID=guid'${this._sUuidUpload}')/$value`;
+        sap.m.URLHelper.redirect(sURL);
       },
 
       _initializeBusyIndicator: function () {
