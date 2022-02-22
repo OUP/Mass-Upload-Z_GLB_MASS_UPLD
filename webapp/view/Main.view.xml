@@ -12,12 +12,12 @@
     displayBlock="true" 
     xmlns="sap.m">
 
-    <Shell>
+    <Shell appWidthLimited="false">
         <App>
             <pages> 
                 <semantic:FullscreenPage 
-                    navButtonPress="onNavBack" 
-                    showNavButton="true" 
+                    navButtonPress=".onNavBack" 
+                    showNavButton="false" 
                     title="{i18n>worklistViewTitle}">
                     
                     <semantic:content>
@@ -34,7 +34,7 @@
                                                     buttonOnly="false" 
                                                     change="onFileChange" 
                                                     fileAllowed="onFileAllowed" 
-                                                    fileType="xls,xlsx,csv" 
+                                                    fileType="xls,xlsx,csv,data,dat" 
                                                     icon="sap-icon://open-folder" 
                                                     sendXHR="true" 
                                                     tooltip="{i18n>fileToolTip}" 

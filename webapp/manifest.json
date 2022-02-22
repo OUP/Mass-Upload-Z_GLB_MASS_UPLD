@@ -75,6 +75,14 @@
       }
     },
     "resources": {
+      "js": [
+        {
+          "uri": "model/xlsx.full.min.js"
+        },
+        {
+          "uri": "model/jszip.min.js"
+        }
+      ],
       "css": [
         {
           "uri": "css/style.css"

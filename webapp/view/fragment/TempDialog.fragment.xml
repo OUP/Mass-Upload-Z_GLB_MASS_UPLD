@@ -5,7 +5,7 @@
 -->
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 	<Dialog id="tempDialog" title="{i18n>titlePlanTemplates}">
-		<subHeader>
+		<!-- <subHeader>
 			<Bar>
 				<contentLeft>
 					<Select 
@@ -27,7 +27,7 @@
 					</Label>
 				</contentLeft>
 			</Bar>
-		</subHeader>
+		</subHeader> -->
 		<content>
 			<VBox
 				items="{/TemplateSet}"

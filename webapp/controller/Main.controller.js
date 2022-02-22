@@ -160,6 +160,16 @@ sap.ui.define(
             return;
           }
 
+          if (sTemplateID === "003") {
+            // create runtime csv and call the fileuploader manually
+            this._loadCustomFileUpload(oFiles[0], sTemplateID);
+
+            // clear file uploader
+            oFileUploader.clear();
+
+            return;
+          }
+
           // remove existing all headers
           const aHeaderParameters = oFileUploader.getHeaderParameters();
           let oParameter;
@@ -234,6 +244,7 @@ sap.ui.define(
       onUploadComplete: function (oEvent) {
         // check if server returns error code (for instance inactive virus scan profile)
         if (oEvent.getParameters().status >= 400) {
+          this.oMsgStripErrorProtocol.setVisible(true);
           this._handleErrorOnUploadComplete(oEvent).catch(() =>
             this.oMsgStripErrorProtocol.setText(
               this.getResourceBundle().getText("serverError")
@@ -279,9 +290,6 @@ sap.ui.define(
               if (this._oBusyDialog) {
                 this._oBusyDialog.close();
               }
-
-              // enable test import button on success of file upload
-              this.byId("idBtnTest").setEnabled(true);
 
               // clear file uploader
               let oFileUploader = _oView.byId("fileUploader");
@@ -403,22 +411,6 @@ sap.ui.define(
           .open()
           .setText(this.getResourceBundle().getText("busyFileImport"));
 
-        let oImportBtn = this.byId("idBtnImport");
-        let oTestBtn = this.byId("idBtnTest");
-
-        // on test success
-        const fnSuccess = () => {
-          if (bTest) {
-            oImportBtn.setEnabled(!this._bErrorFlag);
-          }
-
-          // on import success
-          if (bImport) {
-            oImportBtn.setEnabled(false);
-            oTestBtn.setEnabled(false);
-          }
-        };
-
         // on test error
         const fnError = (_oError) => {
           this._oTableContainer.setVisible(false);
@@ -426,11 +418,6 @@ sap.ui.define(
           this.oMsgStripErrorProtocol.setText(
             this.getResourceBundle().getText("errorText")
           );
-
-          // disable Import if there is any error in upload
-          if (bTest || bImport) {
-            oImportBtn.setEnabled(!this._bErrorFlag);
-          }
         };
 
         // close busy dialog
@@ -442,10 +429,7 @@ sap.ui.define(
           }, 200);
         };
 
-        this._loadResponseTable(bTest, bImport)
-          .then(fnSuccess)
-          .catch(fnError)
-          .finally(fnFinal);
+        this._loadResponseTable(bTest, bImport).catch(fnError).finally(fnFinal);
       },
 
       getSeparators: function () {
@@ -513,11 +497,12 @@ sap.ui.define(
                   }),
                 ],
               });
+
               // create new sap.ui.table.GridTable
               let oTable = new Table({
                 visibleRowCountMode: "Auto",
                 selectionMode: "None",
-                minAutoRowCount: 10,
+                minAutoRowCount: 8,
                 extension: [oOverflowToolbar],
               }).addStyleClass("sapUiSmallMargin");
 
@@ -553,14 +538,16 @@ sap.ui.define(
 
                   // label
                   let oColumn = new Column({
+                    autoResizable: true,
                     label: new Text({
                       text: oData.label,
                     }),
                     template: oControl,
-                    width:
-                      oData.label.toUpperCase() === "MESSAGE"
-                        ? "45rem"
-                        : "7.5rem",
+                    width: "auto",
+                    // width:
+                    //   oData.label.toUpperCase() === "MESSAGE"
+                    //     ? "45rem"
+                    //     : "7.5rem",
                   });
 
                   // add column to table
@@ -568,8 +555,29 @@ sap.ui.define(
                 }
               }
 
+              const onAfterRendering = (_) => {
+                let oTpc = null;
+                if (sap.ui.table.TablePointerExtension) {
+                  oTpc = new sap.ui.table.TablePointerExtension(oTable);
+                } else {
+                  oTpc = new sap.ui.table.extensions.Pointer(oTable);
+                }
+                const aColumns = oTable.getColumns();
+                for (let i = aColumns.length; i >= 0; i--) {
+                  oTpc.doAutoResizeColumn(i);
+                }
+              };
+
+              // add event delegate for onafter rendering
+              oTable.addEventDelegate({
+                onAfterRendering,
+              });
+
               // table model
               oTable.setModel(new JSONModel(aItemDataFields));
+
+              // if no entries hide the table
+              oTable.setVisible(aItemDataFields.length !== 0);
 
               // table binding
               let oBindingInfo = oTable.getBindingInfo("rows");
@@ -585,7 +593,10 @@ sap.ui.define(
               // add item to aggregation
               this._oTableContainer.addItem(oTable);
 
-              if (bTest) {
+              let bEnableTestBtn = false;
+              let bEnableImportBtn = false;
+
+              if (sAction !== "Import") {
                 this._bErrorFlag = false;
                 let aErrorRowIndex = [];
 
@@ -596,22 +607,62 @@ sap.ui.define(
                   }
                 }
 
+                // errors found
                 if (aErrorRowIndex.length !== 0) {
+                  this.oMsgStripMessage.setVisible(false);
                   this.oMsgStripErrorProtocol.setVisible(true);
-                  this.oMsgStripErrorProtocol.setText(
-                    "Kinldy fix the errors in below rows " +
-                      aErrorRowIndex.join(", ") +
-                      ".\n\nRe-run the Test import to ensure there are no errors before Import."
-                  );
-                } else {
-                  this.oMsgStripMessage.setVisible(true);
-                  this.oMsgStripMessage.setText(
-                    "Your application data import will create " +
-                      aItemDataFields.length +
-                      " new items."
-                  );
+                  let sErrorIndexs = aErrorRowIndex.join(", ");
+                  let sErrorMsg = `Kinldy fix the errors in below rows ${sErrorIndexs}.
+                    
+                                   Upload valid data to Test Import.`;
+
+                  if (bTest) {
+                    sErrorMsg = `Kinldy fix the errors in below rows ${sErrorIndexs}.
+                      
+                                 Re-run the Test import to ensure there are no errors before Import.`;
+                  }
+
+                  // error message
+                  this.oMsgStripErrorProtocol.setText(sErrorMsg);
+
+                  // enable test import button on success of file upload
+                  bEnableTestBtn = bImport;
+                  bEnableImportBtn = bImport;
                 }
-              } else if (bImport) {
+
+                // no errors found
+                else {
+                  this.oMsgStripMessage.setVisible(true);
+
+                  let sMsg;
+
+                  if (aItemDataFields.length === 0) {
+                    sMsg =
+                      "Your Application data is ready for import.\n\nPlease proceed to Test Import.";
+                  } else {
+                    sMsg = `Your application data is ready for import will create ${aItemDataFields.length} new items.
+
+                            Please proceed to Test Import.`;
+                  }
+
+                  if (bTest) {
+                    if (aItemDataFields.length === 0) {
+                      sMsg =
+                        "Test Import is successful.\n\nPlease proceed to Import.";
+                    } else {
+                      sMsg = `Test Import is successful, Import will create ${aItemDataFields.length} new items.
+
+                              Please proceed to Import.`;
+                    }
+                  }
+
+                  this.oMsgStripMessage.setText(sMsg);
+
+                  // enable test import button on success of file upload
+                  bEnableTestBtn = true;
+                  bEnableImportBtn = bTest;
+                }
+              } else {
                 // success message
                 this.oMsgStripSuccessProtocol.setVisible(true);
                 this.oMsgStripSuccessProtocol.setText(
@@ -622,6 +673,9 @@ sap.ui.define(
                   .byId("idDownloadResultsBtn");
                 oDownloadBtn.setEnabled(true);
               }
+
+              this.byId("idBtnTest").setEnabled(bEnableTestBtn);
+              this.byId("idBtnImport").setEnabled(bEnableImportBtn);
 
               // promise return
               resolve();
@@ -634,9 +688,27 @@ sap.ui.define(
             }
           };
 
-          const fnError = (_oErrorResponse) => {
+          const fnError = (oErrorResponse) => {
             // error in loading file
             MessageToast.show("Error in loading file");
+
+            // clear error messages
+            this.initMessageStrips();
+
+            const oParser = new DOMParser();
+            const oXmlDoc = oParser.parseFromString(
+              oErrorResponse.responseText,
+              "text/xml"
+            );
+            const sMessage = oXmlDoc.getElementsByTagName("message")[0]
+              .innerHTML;
+
+            this.oMsgStripErrorProtocol.setVisible(true);
+            this.oMsgStripErrorProtocol.setText(sMessage);
+
+            // disable both buttons
+            this.byId("idBtnTest").setEnabled(false);
+            this.byId("idBtnImport").setEnabled(false);
 
             // promise return
             reject();
@@ -659,6 +731,7 @@ sap.ui.define(
           });
         });
       },
+
       onPressDownloadBtn: function () {
         let sURL = `/sap/opu/odata/SAP/ZGLB_MASSUPLOAD_SRV/ExportResultSet(TemplateID='${this._sTemplateID}',FileID=guid'${this._sUuidUpload}')/$value`;
         sap.m.URLHelper.redirect(sURL);
@@ -674,6 +747,315 @@ sap.ui.define(
           );
           _oView.addDependent(this._oBusyDialog);
         }
+      },
+
+      _loadCustomFileUpload: function (oFiles, sTemplateID) {
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          let workbook = XLSX.read(e.target.result, {
+            type: "binary",
+          });
+          let iSheetIndex = 0;
+          let aData = [];
+          let sCSV = "";
+
+          const fnArrayToCSV = (data) => {
+            let csv = data.map((row) => Object.values(row));
+            csv.unshift(Object.keys(data[0]));
+            return csv.join("\n");
+            // return `"${csv.join('"\n"').replace(/,/g, '","')}"`;
+          };
+
+          //   let sSheetName;
+
+          //   if (sTemplateID === 003) {
+          //     sSheetName = "Sales Order Template";
+          //   }
+
+          // loop all the available sheets and read the required ones
+          workbook.SheetNames.forEach((sheetName) => {
+            // if (sheetName !== sTemplateID) {
+            //   return;
+            // }
+
+            // increment counter
+            iSheetIndex++;
+
+            // get the all rows data from the sheet
+            var aRow = XLSX.utils.sheet_to_row_object_array(
+              workbook.Sheets[sheetName]
+            );
+
+            // create csv file to send it to backend
+            let aNewItems;
+            if (sTemplateID === "003") {
+              aNewItems = this._createCSV003(iSheetIndex, aRow);
+            }
+
+            // merge all the items to create csv and submit as a single request to backend
+            for (let oItem of aNewItems) {
+              aData.push(oItem);
+            }
+          });
+
+          // convert array to csv
+          sCSV = fnArrayToCSV(aData);
+
+          // trigger backend request
+          this._fnPost(sTemplateID, sCSV, oFiles.name);
+        };
+
+        // on error
+        reader.onerror = (_) => sap.m.MessageToast.show("Fail to load file!");
+
+        // read file as string
+        reader.readAsBinaryString(oFiles);
+      },
+
+      _createCSV003: function (iSheetIndex, aRow) {
+        let aData = [];
+        let oHeaderItem = {
+          SHEET_INDEX: iSheetIndex,
+        };
+        const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({
+          pattern: "yyyyMMdd",
+        });
+
+        for (const row of aRow) {
+          // template type - Gratis/ Internal/ External
+          if (row.__rowNum__ === 6) {
+            oHeaderItem.TEMPLATE = row.__EMPTY_10 || "";
+            continue;
+          }
+
+          // second row
+          // Customer name, Your reference number
+          else if (row.__rowNum__ === 8) {
+            oHeaderItem.CUST_NAME = row.__EMPTY_6 || "";
+            oHeaderItem.REF_NO = row.__EMPTY_14 || "";
+            continue;
+          }
+
+          // third row
+          // Company name, Order date
+          else if (row.__rowNum__ === 9) {
+            oHeaderItem.COMP_NAME_1 = row.__EMPTY_6 || "";
+            // formatted date
+            oHeaderItem.ORDER_DATE =
+              oDateFormat.format(new Date(row.__EMPTY_14)) || "";
+            continue;
+          }
+
+          // four row
+          // Address line 1, OUP Account Number
+          else if (row.__rowNum__ === 10) {
+            oHeaderItem.ADD_LIN_1 = row.__EMPTY_6 || "";
+            oHeaderItem.OUP_ACC_NO = row.__EMPTY_14 || "";
+            continue;
+          }
+
+          // five row
+          // Address line 2, Order type
+          else if (row.__rowNum__ === 11) {
+            oHeaderItem.ADD_LIN_2 = row.__EMPTY_6 || "";
+            oHeaderItem.ORD_TYPE = row.__EMPTY_14 || "";
+            continue;
+          }
+
+          // six row
+          // City / region, Order reason
+          else if (row.__rowNum__ === 12) {
+            oHeaderItem.CITY_REG = row.__EMPTY_6 || "";
+            oHeaderItem.ORD_RES = row.__EMPTY_14 || "";
+            continue;
+          }
+
+          // seven row
+          // Postcode, Footnote text
+          else if (row.__rowNum__ === 13) {
+            oHeaderItem.POST_CODE = row.__EMPTY_6 || "";
+            oHeaderItem.FOOT_TXT = row.__EMPTY_14 || "";
+            continue;
+          }
+
+          // eight row
+          // Country, Shipping method
+          else if (row.__rowNum__ === 14) {
+            oHeaderItem.COUNTRY = row.__EMPTY_6 || "";
+            oHeaderItem.SHIP_MTD = row.__EMPTY_14 || "";
+            continue;
+          }
+
+          // nineth row
+          // Rep Name, Reference Invoice Number
+          else if (row.__rowNum__ === 15) {
+            oHeaderItem.REP_NAME = row.__EMPTY_6 || "";
+            oHeaderItem.REF_INV_NO = row.__EMPTY_14 || "";
+          }
+
+          // tenth row
+          // Rep Code, Sales Org
+          else if (row.__rowNum__ === 16) {
+            oHeaderItem.REP_CODE = row.__EMPTY_6 || "";
+            oHeaderItem.SALES_ORG = row.__EMPTY_14 || "";
+          }
+
+          // eleventh row
+          // Special instructions
+          else if (row.__rowNum__ === 18) {
+            oHeaderItem.SPL_INS = row.__EMPTY_13 || "";
+
+            // skip special instruction default value
+            if (oHeaderItem.SPL_INS === ">Special instructions<") {
+              oHeaderItem.SPL_INS = "";
+            }
+          }
+
+          // ignore title row
+          if (row.__rowNum__ < 27) {
+            continue;
+          }
+
+          let oItem = JSON.parse(JSON.stringify(oHeaderItem));
+
+          /**
+            __EMPTY_1: "Item Counter "
+            __EMPTY_2: "Product Reference"
+            __EMPTY_4: "Qty"
+            __EMPTY_5: "Title "
+            __EMPTY_9: "Line PO Number"
+            __EMPTY_10: "Discount code"
+            __EMPTY_11: "Value"
+            __EMPTY_12: "BP Number "
+            __EMPTY_13: "Customer name:"
+            __EMPTY_14: "Address line 1"
+            __EMPTY_15: "Address line 2"
+            __EMPTY_16: "City / region"
+            __EMPTY_17: "Postcode"
+            __EMPTY_18: "Telephone Number"
+            __EMPTY_19: "Email"
+            __EMPTY_20: "Country"
+         */
+
+          // Item Counter
+          oItem.I_COUNTER = row.__EMPTY_1 || "";
+
+          // ISBN (13 Digit)
+          oItem.I_ISBN = row.__EMPTY_2 || "";
+
+          // Qty
+          oItem.I_QUANTITY = row.__EMPTY_4 || "";
+
+          // Title
+          oItem.I_TITLE = row.__EMPTY_5 || "";
+
+          // Line PO Number
+          oItem.I_LINE_PO = row.__EMPTY_9 || "";
+
+          // Discount code
+          oItem.I_DIS_CODE = row.__EMPTY_10 || "";
+
+          // Discount value
+          oItem.I_DIS_VALUE = row.__EMPTY_11 || "";
+
+          // BP Number
+          oItem.I_BP_NO = row.__EMPTY_12 || "";
+
+          // Customer name
+          oItem.I_CUST_NAME = row.__EMPTY_13 || "";
+
+          // Address line 1
+          oItem.I_ADD_LINE_1 = row.__EMPTY_14 || "";
+
+          // Address line 2
+          oItem.I_ADD_LINE_2 = row.__EMPTY_15 || "";
+
+          // City / region
+          oItem.I_CITY_REG = row.__EMPTY_16 || "";
+
+          // Postcode
+          oItem.I_POST_CODE = row.__EMPTY_17 || "";
+
+          // Telephone
+          oItem.I_TELE_NUMBER = row.__EMPTY_18 || "";
+
+          // Email
+          oItem.I_EMAIL = row.__EMPTY_19 || "";
+
+          // Country
+          oItem.I_COUNTRY = row.__EMPTY_20 || "";
+
+          aData.push(oItem);
+        }
+
+        return aData;
+      },
+
+      _fnPost: function (sTemplateID, sContent, sFileName) {
+        // ajax setup
+        jQuery.ajaxSetup({
+          cache: false,
+        });
+
+        // remove file extension
+        let sFileNameFormatted = sFileName.match(/([^\/]+)(?=\.\w+$)/)[0];
+
+        // remove template id
+        sFileNameFormatted = sFileNameFormatted.substr(4);
+
+        // post request
+        jQuery.ajax({
+          url: _sUrlCheck,
+          async: false,
+          cache: false,
+          data: sContent,
+          type: "POST",
+          beforeSend: (xhr) => {
+            xhr.setRequestHeader(
+              "x-csrf-token",
+              this.oOdataModel.getSecurityToken()
+            );
+            xhr.setRequestHeader("Content-Type", "application/json"); // "text/csv"
+            xhr.setRequestHeader(
+              "slug",
+              `${sTemplateID}|${sFileNameFormatted}`
+            );
+          },
+          success: (oData) => {
+            try {
+              this._sUuidUpload = oData.firstElementChild
+                .getElementsByTagName("m:properties")[0]
+                .getElementsByTagName("d:FileID")[0].innerHTML;
+              this._loadResponseTable(false, false);
+
+              //   .finally(() => {
+              //     // enable test import button on success of file upload
+              //     this.byId("idBtnTest").setEnabled(true);
+              //   });
+            } catch (error) {
+              sap.m.MessageToast.show("Failed to read File ID!");
+            }
+          },
+          error: (oError, oResponse) => {
+            try {
+              const oParser = new DOMParser();
+              const oXmlDoc = oParser.parseFromString(
+                oError.responseText,
+                "text/xml"
+              );
+              const sMessage = oXmlDoc.getElementsByTagName("message")[0]
+                .innerHTML;
+
+              this.oMsgStripErrorProtocol.setVisible(true);
+              this.oMsgStripErrorProtocol.setText(
+                `${sFileNameFormatted} - ${sMessage}`
+              );
+            } catch (error) {
+              // un handled message
+              sap.m.MessageToast.show("File Upload Error!");
+            }
+          },
+        });
       },
     });
   }
