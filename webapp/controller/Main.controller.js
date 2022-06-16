@@ -900,9 +900,17 @@ sap.ui.define(
             oHeaderItem.SALES_ORG = row.__EMPTY_14 || "";
           }
 
+          // ECC Customer Number
+          else if (row.__rowNum__ === 17) {
+            oHeaderItem.ECC_CUST_NO = row.__EMPTY_6 || "";
+          }
+
           // eleventh row
-          // Special instructions
           else if (row.__rowNum__ === 18) {
+            // ECC Sales Order Number
+            oHeaderItem.ECC_SO = row.__EMPTY_6 || "";
+
+            // Special instructions
             oHeaderItem.SPL_INS = row.__EMPTY_13 || "";
 
             // skip special instruction default value

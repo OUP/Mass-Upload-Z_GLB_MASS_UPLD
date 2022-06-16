@@ -1,8 +1,8 @@
 # yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
 
-specVersion: '1.0'
+specVersion: "1.0"
 metadata:
-  name: 'z_glb_mass_upload'
+  name: "z_glb_mass_upload"
 type: application
 ui5Theme: sap_fiori_3
 builder:
@@ -26,4 +26,4 @@ builder:
           name: Z_GLB_MASS_UPLD
           description: Mass Upload Deployment From BAS
           package: ZGLB
-          transport: S4DK900811
+          transport: S4DK909241
