@@ -3,23 +3,11 @@
     Copyright (C) OUP company. All rights reserved.
 
 -->
-<mvc:View 
-    controllerName="oup.glb.zglbmassupload.controller.Main" 
-    xmlns:footerbar="sap.ushell.ui.footerbar" 
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns:semantic="sap.m.semantic" 
-    xmlns:u="sap.ui.unified"
-    displayBlock="true" 
-    xmlns="sap.m">
-
+<mvc:View controllerName="oup.glb.zglbmassupload.controller.Main" xmlns:footerbar="sap.ushell.ui.footerbar" xmlns:mvc="sap.ui.core.mvc" xmlns:semantic="sap.m.semantic" xmlns:u="sap.ui.unified" displayBlock="true" xmlns="sap.m">
     <Shell appWidthLimited="false">
         <App>
-            <pages> 
-                <semantic:FullscreenPage 
-                    navButtonPress=".onNavBack" 
-                    showNavButton="false" 
-                    title="{i18n>worklistViewTitle}">
-                    
+            <pages>
+                <semantic:FullscreenPage navButtonPress=".onNavBack" showNavButton="false" title="{i18n>worklistViewTitle}" class="full-screen">
                     <semantic:content>
                         <Panel>
                             <FlexBox alignItems="Center" height="80px" justifyContent="Center">
@@ -28,23 +16,24 @@
                                         <HBox fitContainer="true" alignItems="Stretch" class="sapUiTinyMarginTopBottom">
                                             <items>
                                                 <Label id="idLabel" labelFor="fileUploader" class="sapUiSmallMarginEnd sapUiTinyMarginTop" text="{i18n>sourceFile}" vAlign="Bottom" />
-                                                <u:FileUploader 
-                                                    id="fileUploader" 
-                                                    name="myFileUpload" 
-                                                    buttonOnly="false" 
-                                                    change="onFileChange" 
-                                                    fileAllowed="onFileAllowed" 
-                                                    fileType="xls,xlsx,csv,data,dat" 
-                                                    icon="sap-icon://open-folder" 
-                                                    sendXHR="true" 
-                                                    tooltip="{i18n>fileToolTip}" 
-                                                    uploadAborted="handleUploadAborted" 
-                                                    uploadComplete="onUploadComplete" 
-                                                    uploadOnChange="false" 
-                                                    useMultipart="false" 
-                                                    width="400px" 
-                                                    buttonText="{i18n>btnFileUploadText}" 
-                                                    typeMissmatch="onTypeMissmatch" />
+                                                <u:FileUploader
+                                                    id="fileUploader"
+                                                    name="myFileUpload"
+                                                    buttonOnly="false"
+                                                    change="onFileChange"
+                                                    fileAllowed="onFileAllowed"
+                                                    fileType="xls,xlsx,csv,data,dat"
+                                                    icon="sap-icon://open-folder"
+                                                    sendXHR="true"
+                                                    tooltip="{i18n>fileToolTip}"
+                                                    uploadAborted="handleUploadAborted"
+                                                    uploadComplete="onUploadComplete"
+                                                    uploadOnChange="false"
+                                                    useMultipart="false"
+                                                    width="400px"
+                                                    buttonText="{i18n>btnFileUploadText}"
+                                                    typeMissmatch="onTypeMissmatch"
+                                                />
                                             </items>
                                         </HBox>
                                     </items>
@@ -52,12 +41,16 @@
                             </FlexBox>
                         </Panel>
 
-                        <MessageStrip id="idMsgStripMessage" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop"></MessageStrip>
-                        <MessageStrip id="idMsgStripWarningProtocol" type="Warning" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop"></MessageStrip>
-                        <MessageStrip id="idMsgStripErrorProtocol" type="Error" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop"></MessageStrip>
-                        <MessageStrip id="idMsgStripSuccessProtocol" type="Success" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop"></MessageStrip>
+                        <MessageStrip id="idMsgStripMessage" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop" />
+                        <MessageStrip id="idMsgStripWarningProtocol" type="Warning" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop" />
+                        <MessageStrip id="idMsgStripErrorProtocol" type="Error" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop" />
+                        <MessageStrip id="idMsgStripSuccessProtocol" type="Success" showIcon="true" class="sapUiSmallMarginBeginEnd sapUiSmallMarginTop" />
 
-                        <VBox id="idWorkListTableContainer" />
+                        <VBox id="idWorkListTableContainer" class="table-container">
+                            <layoutData>
+                                <FlexItemData growFactor="3" baseSize="0%" />
+                            </layoutData>
+                        </VBox>
                     </semantic:content>
 
                     <semantic:customFooterContent>
@@ -65,10 +58,8 @@
                         <Button enabled="false" id="idBtnTest" press="onPressTestImport" text="{i18n>simButton}" />
                         <Button enabled="false" id="idBtnImport" press="onPressImport" text="{i18n>impButton}" />
                     </semantic:customFooterContent>
-
                 </semantic:FullscreenPage>
             </pages>
         </App>
     </Shell>
-
 </mvc:View>

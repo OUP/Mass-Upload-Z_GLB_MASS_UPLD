@@ -10,6 +10,8 @@ sap.ui.define(
     "sap/ui/table/Table",
     "sap/ui/table/Column",
     "sap/ui/table/RowSettings",
+    "sap/ui/export/library",
+    "sap/ui/export/Spreadsheet",
     "sap/m/Text",
     "sap/m/MessageToast",
     "sap/m/OverflowToolbar",
@@ -24,6 +26,8 @@ sap.ui.define(
     Table,
     Column,
     RowSettings,
+    exportLibrary,
+    Spreadsheet,
     Text,
     MessageToast,
     OverflowToolbar,
@@ -35,6 +39,9 @@ sap.ui.define(
 
     let _oView = null;
     const _sUrlCheck = "/sap/opu/odata/sap/ZGLB_MASSUPLOAD_SRV/FileContentsSet";
+    const EdmType = exportLibrary.EdmType;
+    let _aColumnConfig = [];
+    let _bClientDownload = false;
 
     return Controller.extend("oup.glb.zglbmassupload.controller.Main", {
       /* =========================================================== */
@@ -481,7 +488,6 @@ sap.ui.define(
               let sStatusFieldProperty = "";
 
               //Overflow Toolbar
-              var that = this;
               var oOverflowToolbar = new OverflowToolbar({
                 content: [
                   new Title({ text: "ITEMS (" + aItemDataFields.length + ")" }),
@@ -491,8 +497,12 @@ sap.ui.define(
                     text: "Download",
                     icon: "sap-icon://excel-attachment",
                     enabled: false,
-                    press: function () {
-                      that.onPressDownloadBtn();
+                    press: () => {
+                      if (_bClientDownload) {
+                        this._downloadExcel(aItemDataFields);
+                      } else {
+                        this.onPressDownloadBtn();
+                      }
                     },
                   }),
                 ],
@@ -504,6 +514,12 @@ sap.ui.define(
                 selectionMode: "None",
                 minAutoRowCount: 8,
                 extension: [oOverflowToolbar],
+                layoutData: [
+                  new sap.m.FlexItemData({
+                    growFactor: 1,
+                    baseSize: "0%",
+                  }),
+                ],
               }).addStyleClass("sapUiSmallMargin");
 
               // identify columns
@@ -514,6 +530,9 @@ sap.ui.define(
                   label: oData.Name,
                 });
               }
+
+              /// reset column config
+              _aColumnConfig = [];
 
               // add columns to table
               for (let oData of aTableProperties) {
@@ -553,6 +572,12 @@ sap.ui.define(
                   // add column to table
                   oTable.addColumn(oColumn);
                 }
+
+                /// add column in excel
+                _aColumnConfig.push({
+                  label: oData.label,
+                  property: oData.property,
+                });
               }
 
               const onAfterRendering = (_) => {
@@ -612,12 +637,12 @@ sap.ui.define(
                   this.oMsgStripMessage.setVisible(false);
                   this.oMsgStripErrorProtocol.setVisible(true);
                   let sErrorIndexs = aErrorRowIndex.join(", ");
-                  let sErrorMsg = `Kinldy fix the errors in below rows ${sErrorIndexs}.
+                  let sErrorMsg = `Kindly fix the errors in below rows ${sErrorIndexs}.
                     
                                    Upload valid data to Test Import.`;
 
                   if (bTest) {
-                    sErrorMsg = `Kinldy fix the errors in below rows ${sErrorIndexs}.
+                    sErrorMsg = `Kindly fix the errors in below rows ${sErrorIndexs}.
                       
                                  Re-run the Test import to ensure there are no errors before Import.`;
                   }
@@ -661,6 +686,9 @@ sap.ui.define(
                   // enable test import button on success of file upload
                   bEnableTestBtn = true;
                   bEnableImportBtn = bTest;
+
+                  /// enable download button
+                  _bClientDownload = true;
                 }
               } else {
                 // success message
@@ -668,14 +696,16 @@ sap.ui.define(
                 this.oMsgStripSuccessProtocol.setText(
                   "Application data is created successfully."
                 );
-                var oDownloadBtn = sap.ui
-                  .getCore()
-                  .byId("idDownloadResultsBtn");
-                oDownloadBtn.setEnabled(true);
+
+                /// enable download button
+                _bClientDownload = false;
               }
 
               this.byId("idBtnTest").setEnabled(bEnableTestBtn);
               this.byId("idBtnImport").setEnabled(bEnableImportBtn);
+
+              var oDownloadBtn = sap.ui.getCore().byId("idDownloadResultsBtn");
+              oDownloadBtn.setEnabled(true);
 
               // promise return
               resolve();
@@ -1064,6 +1094,23 @@ sap.ui.define(
             }
           },
         });
+      },
+
+      _downloadExcel: function (dataSource) {
+        let oSettings, oSheet;
+
+        oSettings = {
+          workbook: { columns: _aColumnConfig },
+          dataSource,
+        };
+
+        oSheet = new Spreadsheet(oSettings);
+        oSheet
+          .build()
+          .then(function () {
+            MessageToast.show("Spreadsheet export has finished");
+          })
+          .finally(oSheet.destroy);
       },
     });
   }
