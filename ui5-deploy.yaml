@@ -26,4 +26,4 @@ builder:
           name: Z_GLB_MASS_UPLD
           description: Mass Upload Deployment From BAS
           package: ZGLB
-          transport: S4DK913677
+          transport: S4DK914554
