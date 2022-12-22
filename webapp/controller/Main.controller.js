@@ -1110,7 +1110,7 @@ sap.ui.define(
           .then(function () {
             MessageToast.show("Spreadsheet export has finished");
           })
-          .finally(oSheet.destroy);
+          .finally(oSheet.destroy());
       },
     });
   }
