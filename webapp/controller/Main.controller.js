@@ -71,12 +71,10 @@ sap.ui.define(
 
         // Model used to manipulate control states
         oViewModel = new JSONModel({
-          saveAsTileTitle: this.getResourceBundle().getText(
-            "worklistViewTitle"
-          ),
-          shareOnJamTitle: this.getResourceBundle().getText(
-            "worklistViewTitle"
-          ),
+          saveAsTileTitle:
+            this.getResourceBundle().getText("worklistViewTitle"),
+          shareOnJamTitle:
+            this.getResourceBundle().getText("worklistViewTitle"),
           tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
           tableDataRetrievingText: this.getResourceBundle().getText(
             "tableDataRetrievingText"
@@ -375,7 +373,8 @@ sap.ui.define(
         };
 
         //use regular expression to retrieve the UUID from the response message
-        let myregex = /\w\w\w\w\w\w\w\w-\w\w\w\w-\w\w\w\w-\w\w\w\w-\w\w\w\w\w\w\w\w\w\w\w\w/;
+        let myregex =
+          /\w\w\w\w\w\w\w\w-\w\w\w\w-\w\w\w\w-\w\w\w\w-\w\w\w\w\w\w\w\w\w\w\w\w/;
         let matches = myregex.exec(strResponse);
 
         //out.y contains the uuid
@@ -730,8 +729,8 @@ sap.ui.define(
               oErrorResponse.responseText,
               "text/xml"
             );
-            const sMessage = oXmlDoc.getElementsByTagName("message")[0]
-              .innerHTML;
+            const sMessage =
+              oXmlDoc.getElementsByTagName("message")[0].innerHTML;
 
             this.oMsgStripErrorProtocol.setVisible(true);
             this.oMsgStripErrorProtocol.setText(sMessage);
@@ -804,12 +803,12 @@ sap.ui.define(
 
           // loop all the available sheets and read the required ones
           workbook.SheetNames.forEach((sheetName) => {
-            // if (sheetName !== sTemplateID) {
-            //   return;
-            // }
-
             // increment counter
             iSheetIndex++;
+
+            if (sheetName === "Instructions" || sheetName === "Formula") {
+              return;
+            }
 
             // get the all rows data from the sheet
             var aRow = XLSX.utils.sheet_to_row_object_array(
@@ -877,69 +876,72 @@ sap.ui.define(
           }
 
           // four row
-          // Address line 1, OUP Account Number
+          // Address line, OUP Account Number
           else if (row.__rowNum__ === 10) {
-            oHeaderItem.ADD_LIN_1 = row.__EMPTY_6 || "";
+            oHeaderItem.ADD_LIN = row.__EMPTY_6 || "";
             oHeaderItem.OUP_ACC_NO = row.__EMPTY_14 || "";
             continue;
           }
 
           // five row
-          // Address line 2, Order type
+          // Address line 1, Order type
           else if (row.__rowNum__ === 11) {
-            oHeaderItem.ADD_LIN_2 = row.__EMPTY_6 || "";
+            oHeaderItem.ADD_LIN_1 = row.__EMPTY_6 || "";
             oHeaderItem.ORD_TYPE = row.__EMPTY_14 || "";
             continue;
           }
 
           // six row
-          // City / region, Order reason
+          // Address line 2, Order reason
           else if (row.__rowNum__ === 12) {
-            oHeaderItem.CITY_REG = row.__EMPTY_6 || "";
+            oHeaderItem.ADD_LIN_2 = row.__EMPTY_6 || "";
             oHeaderItem.ORD_RES = row.__EMPTY_14 || "";
             continue;
           }
 
           // seven row
-          // Postcode, Footnote text
+          // City / region, Footnote text
           else if (row.__rowNum__ === 13) {
-            oHeaderItem.POST_CODE = row.__EMPTY_6 || "";
+            oHeaderItem.CITY_REG = row.__EMPTY_6 || "";
             oHeaderItem.FOOT_TXT = row.__EMPTY_14 || "";
             continue;
           }
 
           // eight row
-          // Country, Shipping method
+          // Postcode, Shipping method
           else if (row.__rowNum__ === 14) {
-            oHeaderItem.COUNTRY = row.__EMPTY_6 || "";
+            oHeaderItem.POST_CODE = row.__EMPTY_6 || "";
             oHeaderItem.SHIP_MTD = row.__EMPTY_14 || "";
             continue;
           }
 
           // nineth row
-          // Rep Name, Reference Invoice Number
+          // Country, Reference Invoice Number
           else if (row.__rowNum__ === 15) {
-            oHeaderItem.REP_NAME = row.__EMPTY_6 || "";
+            oHeaderItem.COUNTRY = row.__EMPTY_6 || "";
             oHeaderItem.REF_INV_NO = row.__EMPTY_14 || "";
+            continue;
           }
 
           // tenth row
-          // Rep Code, Sales Org
+          // Rep Name, Sales Org
           else if (row.__rowNum__ === 16) {
-            oHeaderItem.REP_CODE = row.__EMPTY_6 || "";
+            oHeaderItem.REP_NAME = row.__EMPTY_6 || "";
             oHeaderItem.SALES_ORG = row.__EMPTY_14 || "";
-          }
-
-          // ECC Customer Number
-          else if (row.__rowNum__ === 17) {
-            oHeaderItem.ECC_CUST_NO = row.__EMPTY_6 || "";
+            continue;
           }
 
           // eleventh row
-          else if (row.__rowNum__ === 18) {
-            // ECC Sales Order Number
-            oHeaderItem.ECC_SO = row.__EMPTY_6 || "";
+          // Rep Code
+          else if (row.__rowNum__ === 17) {
+            oHeaderItem.REP_CODE = row.__EMPTY_6 || "";
+            continue;
+          }
 
+          // twelfth row
+          // ECC Customer Number, >Special instructions<
+          else if (row.__rowNum__ === 18) {
+            oHeaderItem.ECC_CUST_NO = row.__EMPTY_6 || "";
             // Special instructions
             oHeaderItem.SPL_INS = row.__EMPTY_13 || "";
 
@@ -947,6 +949,14 @@ sap.ui.define(
             if (oHeaderItem.SPL_INS === ">Special instructions<") {
               oHeaderItem.SPL_INS = "";
             }
+            continue;
+          }
+
+          // thirteenth row
+          // ECC Sales Order Number
+          else if (row.__rowNum__ === 19) {
+            oHeaderItem.ECC_SO = row.__EMPTY_6 || "";
+            continue;
           }
 
           // ignore title row
@@ -957,21 +967,21 @@ sap.ui.define(
           let oItem = JSON.parse(JSON.stringify(oHeaderItem));
 
           /**
-            __EMPTY_1: "Item Counter "
+            __EMPTY_1: "Item Counter"
             __EMPTY_2: "Product Reference"
             __EMPTY_4: "Qty"
-            __EMPTY_5: "Title "
+            __EMPTY_5: "Title"
             __EMPTY_9: "Line PO Number"
             __EMPTY_10: "Discount code"
             __EMPTY_11: "Value"
-            __EMPTY_12: "BP Number "
+            __EMPTY_12: "BP Number"
             __EMPTY_13: "Customer name:"
             __EMPTY_14: "Address line 1"
             __EMPTY_15: "Address line 2"
             __EMPTY_16: "City / region"
             __EMPTY_17: "Postcode"
             __EMPTY_18: "Telephone Number"
-            __EMPTY_19: "Email"
+            __EMPTY_19: "Email Address"
             __EMPTY_20: "Country"
          */
 
@@ -1081,8 +1091,8 @@ sap.ui.define(
                 oError.responseText,
                 "text/xml"
               );
-              const sMessage = oXmlDoc.getElementsByTagName("message")[0]
-                .innerHTML;
+              const sMessage =
+                oXmlDoc.getElementsByTagName("message")[0].innerHTML;
 
               this.oMsgStripErrorProtocol.setVisible(true);
               this.oMsgStripErrorProtocol.setText(

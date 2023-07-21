@@ -24,7 +24,12 @@ server:
       backend:
       - path: /sap
         url: http://s4dbasdev130:443
+        client: 130
         destination: S4D130
+        auth: basic
+        credentials:
+          username: env:130_USER
+          password: env:130_PASSWORD
   - name: fiori-tools-appreload
     afterMiddleware: compression
     configuration:
