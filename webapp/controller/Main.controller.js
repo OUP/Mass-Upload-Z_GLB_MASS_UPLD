@@ -959,12 +959,68 @@ sap.ui.define(
             continue;
           }
 
+          let oItem = JSON.parse(JSON.stringify(oHeaderItem));
+
+          // check if we have don't have order line items we will skip other execution
+          if (aRow.length === 15) {
+            // Item Counter
+            oItem.I_COUNTER = "";
+
+            // ISBN (13 Digit)
+            oItem.I_ISBN = "";
+
+            // Qty
+            oItem.I_QUANTITY = "";
+
+            // Title
+            oItem.I_TITLE = "";
+
+            // Line PO Number
+            oItem.I_LINE_PO = "";
+
+            // Discount code
+            oItem.I_DIS_CODE = "";
+
+            // Discount value
+            oItem.I_DIS_VALUE = "";
+
+            // BP Number
+            oItem.I_BP_NO = "";
+
+            // Customer name
+            oItem.I_CUST_NAME = "";
+
+            // Address line 1
+            oItem.I_ADD_LINE_1 = "";
+
+            // Address line 2
+            oItem.I_ADD_LINE_2 = "";
+
+            // City / region
+            oItem.I_CITY_REG = "";
+
+            // Postcode
+            oItem.I_POST_CODE = "";
+
+            // Telephone
+            oItem.I_TELE_NUMBER = "";
+
+            // Email
+            oItem.I_EMAIL = "";
+
+            // Country
+            oItem.I_COUNTRY = "";
+
+            aData.push(oItem);
+
+            // exit the for loop
+            break;
+          }
+
           // ignore title row
           if (row.__rowNum__ < 27) {
             continue;
           }
-
-          let oItem = JSON.parse(JSON.stringify(oHeaderItem));
 
           /**
             __EMPTY_1: "Item Counter"
